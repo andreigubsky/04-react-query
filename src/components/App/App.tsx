@@ -9,46 +9,77 @@ import fetchMovies from "../../services/movieService";
 import toast, { Toaster } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import type { Movie } from "../../types/movie";
+import { useQuery } from "@tanstack/react-query";
 
-function App() {
-  const [movies, setMovies] = useState<Movie[]>([]);
+
+
+// використовувати відповідні хуки безпосередньо в тому компоненті, 
+// де необхідна обробка отриманих даних
+export default function App() {
   const [query, setQuery] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
+  const [count, setCount] = useState(1);
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [isError, setIsError] = useState(false);
+  // const [isSuccess, setisSuccess] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  useEffect(() => {
-    if (!query) return;
 
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        setIsError(false);
-        const data = await fetchMovies(query);
-        console.log(data);
-        // Посмотри в консоль: это массив [] или объект {}?
-        // setMovies(Array.isArray(data) ? data : data.results || []);
-        setMovies(data);
-        if (data.length === 0) {
-          //Якщо в результаті запиту масив фільмів порожній
-          toast.error("No movies found for your request.");
-          setMovies([]);
-          return;
-        }
-      } catch (error) {
-        setIsError(true);
-        toast.error("Щось пішло не так");
-      } finally {
-        setIsLoading(false);
+
+  const loadDataMovies = async () => {
+    try {
+      const response = await fetchMovies(query);
+      console.log(response.data);
+      
+      if (response.data.length === 0) {
+        toast.error("No movies found for your request.");
+        
+        return;
       }
-    };
+      return response.data;
+    } catch (error) {
+ 
+      toast.error("Щось пішло не так");
+    } finally {
+      
+    }
+  };
+  const { data, error, isLoading, isError, isSuccess } = useQuery({
+    queryKey: ['movie', count], 
+    queryFn: loadDataMovies,
+    enabled: query !== "",  
+  });
 
-    loadData();
-  }, [query]);
+  const movies = data || [];
+
+  // useEffect(() => {
+  //   if (!query) return;
+
+  //   const loadData = async () => {
+  //     try {
+  //       setIsLoading(true);
+  //       setIsError(false);
+  //       const data = await fetchMovies(query);
+  //       console.log(data);
+  //       setMovies(data);
+  //       if (data.length === 0) {
+  //         //Якщо в результаті запиту масив фільмів порожній
+  //         toast.error("No movies found for your request.");
+  //         setMovies([]);
+  //         return;
+  //       }
+  //     } catch (error) {
+  //       setIsError(true);
+  //       toast.error("Щось пішло не так");
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   loadData();
+  // }, [query]);
 
   const handleSearch = (newQuery: string) => {
-    //При кожному новому пошуку колекція фільмів з попереднього пошуку повинна очищатись.
-    setMovies([]);
+   
     setQuery(newQuery);
   };
   const openModal = (movie: Movie) => setSelectedMovie(movie);
@@ -87,5 +118,3 @@ function App() {
     </>
   );
 }
-
-export default App;

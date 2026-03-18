@@ -17,14 +17,14 @@ interface TmdbResponse {
 export default async function fetchMovies(
   query: string,
   page: number,
-): Promise<Movie[]> {
+): Promise<TmdbResponse> {
   try {
     const axiosConfig = {
       method: "get",
       url: URL,
       params: {
         query: query,
-        language: "uk-UA", // Опционально: язык результатов
+        language: "uk-UA", 
         include_adult: false,
         page: page,
       },
@@ -35,9 +35,9 @@ export default async function fetchMovies(
     };
 
     const response = await axios.request<TmdbResponse>(axiosConfig);
-    return response.data.results; // Возвращаем массив фильмов
+    return response.data; 
   } catch (err) {
     console.error("fetchMovies error:", err);
-    return []; // Возвращаем пустой массив в случае ошибки, чтобы .map не ломался
+    throw err;; 
   }
 }
