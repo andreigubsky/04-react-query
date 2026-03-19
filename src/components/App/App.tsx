@@ -9,7 +9,7 @@ import fetchMovies from "../../services/movieService";
 import toast, { Toaster } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import type { Movie } from "../../types/movie";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 
 
 
@@ -22,20 +22,20 @@ export default function App() {
   // const [isError, setIsError] = useState(false);
   // const [isSuccess, setisSuccess] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
 
-
-  const loadDataMovies = async () => {
+  const loadDataMovies = async (page: number) => {
     try {
-      const response = await fetchMovies(query);
-      console.log(response.data);
+      const response = await fetchMovies(query, currentPage);
+      console.log("Test", response.results);
       
-      if (response.data.length === 0) {
+      if (response.results.length === 0) {
         toast.error("No movies found for your request.");
         
         return;
       }
-      return response.data;
+      return response.results;
     } catch (error) {
  
       toast.error("Щось пішло не так");
@@ -43,10 +43,13 @@ export default function App() {
       
     }
   };
+
+
   const { data, error, isLoading, isError, isSuccess } = useQuery({
-    queryKey: ['movie', count], 
-    queryFn: loadDataMovies,
-    enabled: query !== "",  
+    queryKey: ['movie', query, currentPage], 
+    queryFn: ()=>loadDataMovies(query, currentPage),
+    enabled: query !== "",
+    placeholderData: keepPreviousData,  
   });
 
   const movies = data || [];
@@ -95,7 +98,7 @@ export default function App() {
       <button onClick={handleClick}>Second button</button>
       {isError && <ErrorMessage />}
       {isLoading && !isError && <Loader />}
-      {/* {!isLoading && !isError && movies.length > 1 && (
+      {!isLoading && !isError && movies.length > 1 && (
         <Pagination
           pageCount={totalPages}
           pageRangeDisplayed={5}
@@ -107,7 +110,7 @@ export default function App() {
           nextLabel="→"
           previousLabel="←"
         />
-      )} */}
+      )}
       {!isLoading && !isError && movies.length > 0 && (
         <MovieGrid movies={movies} onSelect={openModal} />
       )}
