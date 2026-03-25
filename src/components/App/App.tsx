@@ -3,108 +3,76 @@ import SearchBar from "../SearchBar/SearchBar";
 import MovieGrid from "../MovieGrid/MovieGrid";
 import MovieModal from "../MovieModal/MovieModal";
 import Loader from "../Loader/Loader";
-import Pagination from "../Pagination/Pagination";
+import ReactPaginate from "react-paginate";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import fetchMovies from "../../services/movieService";
 import toast, { Toaster } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import type { Movie } from "../../types/movie";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-
+import css from "./App.module.css"
+import type { TmdbResponse } from "../../types/movie";
 
 
 // використовувати відповідні хуки безпосередньо в тому компоненті, 
 // де необхідна обробка отриманих даних
 export default function App() {
   const [query, setQuery] = useState<string>("");
-  const [count, setCount] = useState(1);
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [isError, setIsError] = useState(false);
-  // const [isSuccess, setisSuccess] = useState(false);
+
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
 
-  const loadDataMovies = async (page: number) => {
+  const loadDataMovies = async (query: string, currentPage: number) => {
     try {
       const response = await fetchMovies(query, currentPage);
       console.log("Test", response.results);
       
       if (response.results.length === 0) {
         toast.error("No movies found for your request.");
-        
-        return;
+        throw new Error("No movies found");
       }
-      return response.results;
+      return response;
     } catch (error) {
- 
+      
       toast.error("Щось пішло не так");
+      throw error;
     } finally {
       
     }
   };
 
 
-  const { data, error, isLoading, isError, isSuccess } = useQuery({
+  const { data, isLoading, isError } = useQuery<TmdbResponse>({
     queryKey: ['movie', query, currentPage], 
     queryFn: ()=>loadDataMovies(query, currentPage),
     enabled: query !== "",
     placeholderData: keepPreviousData,  
   });
 
-  const movies = data || [];
-
-  // useEffect(() => {
-  //   if (!query) return;
-
-  //   const loadData = async () => {
-  //     try {
-  //       setIsLoading(true);
-  //       setIsError(false);
-  //       const data = await fetchMovies(query);
-  //       console.log(data);
-  //       setMovies(data);
-  //       if (data.length === 0) {
-  //         //Якщо в результаті запиту масив фільмів порожній
-  //         toast.error("No movies found for your request.");
-  //         setMovies([]);
-  //         return;
-  //       }
-  //     } catch (error) {
-  //       setIsError(true);
-  //       toast.error("Щось пішло не так");
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   loadData();
-  // }, [query]);
+  const movies = data?.results || [];
+  const totalPages = data?.total_pages || 0;
 
   const handleSearch = (newQuery: string) => {
-   
     setQuery(newQuery);
+    setCurrentPage(1);
   };
   const openModal = (movie: Movie) => setSelectedMovie(movie);
   const closeModal = () => setSelectedMovie(null);
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    console.log("Clicked!", event);
-    console.log("Target:", event.target); // сам <button>
-  };
   return (
     <>
       <SearchBar onSubmit={handleSearch} />
-      <button onClick={handleClick}>Second button</button>
+     
       {isError && <ErrorMessage />}
       {isLoading && !isError && <Loader />}
-      {!isLoading && !isError && movies.length > 1 && (
-        <Pagination
+      {!isLoading && !isError && totalPages  > 1 && (
+        <ReactPaginate
           pageCount={totalPages}
           pageRangeDisplayed={5}
           marginPagesDisplayed={1}
-          onPageChange={({ selected }) => setPage(selected + 1)}
-          forcePage={page - 1}
+          onPageChange={({ selected }) => setCurrentPage(selected + 1)}
+          forcePage={currentPage - 1}
           containerClassName={css.pagination}
           activeClassName={css.active}
           nextLabel="→"

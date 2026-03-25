@@ -3,16 +3,12 @@
 // Типізуйте її параметри, результат, який вона повертає,
 // та відповідь від Axios.
 import axios from "axios";
-import type { Movie } from "../types/movie";
+import type { TmdbResponse } from "../types/movie";
 
 const TOKEN = import.meta.env.VITE_TMDB_TOKEN;
 const URL = "https://api.themoviedb.org/3/search/movie";
 
-interface TmdbResponse {
-  results: Movie[];
-  total_pages: number;
-  total_results: number;
-}
+
 
 export default async function fetchMovies(
   query: string,
@@ -35,6 +31,9 @@ export default async function fetchMovies(
     };
 
     const response = await axios.request<TmdbResponse>(axiosConfig);
+    if (!response.data) {
+      throw new Error('No data');
+    }
     return response.data; 
   } catch (err) {
     console.error("fetchMovies error:", err);
