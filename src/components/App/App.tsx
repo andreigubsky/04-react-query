@@ -41,7 +41,7 @@ export default function App() {
     queryKey: ['movie', query, currentPage], 
     queryFn: ()=>loadDataMovies(query, currentPage),
     enabled: query !== "",
-    placeholderData: keepPreviousData,  
+    placeholderData: (prev) => prev, 
   });
 
   const movies = data?.results || [];
