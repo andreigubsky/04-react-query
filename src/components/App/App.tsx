@@ -7,21 +7,16 @@ import Pagination from "../Pagination/Pagination";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import fetchMovies from "../../services/movieService";
 import toast, { Toaster } from "react-hot-toast";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Movie } from "../../types/movie";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import css from "./App.module.css"
 import type { TmdbResponse } from "../../types/movie";
 
 
-// використовувати відповідні хуки безпосередньо в тому компоненті, 
-// де необхідна обробка отриманих даних
 export default function App() {
   const [query, setQuery] = useState<string>("");
-
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-
 
   const loadDataMovies = async (query: string, currentPage: number) => {
     try {
@@ -41,7 +36,6 @@ export default function App() {
       
     }
   };
-
 
   const { data, isLoading, isError } = useQuery<TmdbResponse>({
     queryKey: ['movie', query, currentPage], 
