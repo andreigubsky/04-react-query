@@ -3,7 +3,7 @@ import SearchBar from "../SearchBar/SearchBar";
 import MovieGrid from "../MovieGrid/MovieGrid";
 import MovieModal from "../MovieModal/MovieModal";
 import Loader from "../Loader/Loader";
-import ReactPaginate from "react-paginate";
+import Pagination from "../Pagination/Pagination";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import fetchMovies from "../../services/movieService";
 import toast, { Toaster } from "react-hot-toast";
@@ -67,17 +67,11 @@ export default function App() {
       {isError && <ErrorMessage />}
       {isLoading && !isError && <Loader />}
       {!isLoading && !isError && totalPages  > 1 && (
-        <ReactPaginate
-          pageCount={totalPages}
-          pageRangeDisplayed={5}
-          marginPagesDisplayed={1}
-          onPageChange={({ selected }) => setCurrentPage(selected + 1)}
-          forcePage={currentPage - 1}
-          containerClassName={css.pagination}
-          activeClassName={css.active}
-          nextLabel="→"
-          previousLabel="←"
-        />
+        <Pagination
+        totalPages={totalPages}
+        page={currentPage}
+        setPage={setCurrentPage}
+      />
       )}
       {!isLoading && !isError && movies.length > 0 && (
         <MovieGrid movies={movies} onSelect={openModal} />
