@@ -9,7 +9,7 @@ import fetchMovies from "../../services/movieService";
 import toast, { Toaster } from "react-hot-toast";
 import { useState } from "react";
 import type { Movie } from "../../types/movie";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import type { TmdbResponse } from "../../types/movie";
 
 
