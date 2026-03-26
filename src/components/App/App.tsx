@@ -30,7 +30,9 @@ export default function App() {
       return response;
     } catch (error) {
       
-      toast.error("Щось пішло не так");
+      onError: () => {
+        toast.error("Щось пішло не так");
+      }
       throw error;
     } finally {
       
@@ -39,12 +41,12 @@ export default function App() {
 
   const { data, isLoading, isError } = useQuery<TmdbResponse>({
     queryKey: ['movie', query, currentPage], 
-    queryFn: ()=>loadDataMovies(query, currentPage),
+    queryFn: ()=>fetchMovies(query, currentPage),
     enabled: query !== "",
     placeholderData: (prev) => prev, 
   });
 
-  const movies = data?.results || [];
+  const movies = data?.results ?? [];
   const totalPages = data?.total_pages || 0;
 
   const handleSearch = (newQuery: string) => {
